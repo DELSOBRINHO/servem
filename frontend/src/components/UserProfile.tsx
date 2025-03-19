@@ -114,3 +114,103 @@ const UserProfile = ({ userId }: UserProfileProps) => {
             <p><strong>Email:</strong> {user?.email}</p>
             <p><strong>Função:</strong> {user?.role === "líder" ? "Líder" : "Voluntário"}</p>
             <p><strong>Ministério:</strong> {user?.ministry || "Não informado"}</p>
+          </div>
+          
+          <div className="mb-4">
+            <h3 className="text-lg font-medium">Disponibilidade</h3>
+            {daysOfWeek.map(day => (
+              <div key={day} className="flex items-center mb-1">
+                <span className="w-32">{day}:</span>
+                <span className={user?.availability?.[day] ? "text-green-600" : "text-red-600"}>
+                  {user?.availability?.[day] ? "Disponível" : "Indisponível"}
+                </span>
+              </div>
+            ))}
+          </div>
+          
+          <button
+            onClick={() => setEditing(true)}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          >
+            Editar Perfil
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Nome</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Ministério</label>
+            <input
+              type="text"
+              name="ministry"
+              value={formData.ministry}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              placeholder="Ex: Louvor, Infantil, Recepção..."
+            />
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Disponibilidade</label>
+            {daysOfWeek.map(day => (
+              <div key={day} className="flex items-center mb-2">
+                <span className="w-32">{day}:</span>
+                <div className="flex space-x-4">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      checked={formData.availability?.[day] === true}
+                      onChange={() => handleAvailabilityChange(day, true)}
+                      className="form-radio h-4 w-4 text-blue-600"
+                    />
+                    <span className="ml-2">Disponível</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      checked={formData.availability?.[day] === false}
+                      onChange={() => handleAvailabilityChange(day, false)}
+                      className="form-radio h-4 w-4 text-red-600"
+                    />
+                    <span className="ml-2">Indisponível</span>
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex space-x-4">
+            <button
+              type="submit"
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+              disabled={loading}
+            >
+              {loading ? "Salvando..." : "Salvar"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition-colors"
+              disabled={loading}
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+};
+
+export default UserProfile;
