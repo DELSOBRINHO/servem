@@ -1,21 +1,28 @@
 {
-  "name": "Serve+ Development Container",
-  "image": "mcr.microsoft.com/devcontainers/python:3.10",
-  "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.10"
-    }
+  "name": "AWS Runner GitPod Flex",
+  "build": {
+      "dockerfile": "../Dockerfile",
+      "context": ".."
   },
   "customizations": {
-    "vscode": {
-      "settings": {
-        "python.defaultInterpreterPath": "/workspace/.venv/bin/python"
-      },
-      "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance"
-      ]
-    }
+      "vscode": {
+          "extensions": [
+              "ms-python.python",
+              "ms-python.vscode-pylance",
+              "sourcegraph.cody-ai"
+          ],
+          "settings": {
+              "python.defaultInterpreterPath": "/usr/local/bin/python",
+              "python.linting.enabled": true,
+              "python.linting.pylintEnabled": true,
+              "cody.chat.persistenceEnabled": true,
+              "cody.chat.persistencePath": "/root/.config/sourcegraph/cody"
+          }
+      }
   },
-  "postCreateCommand": "python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt"
+  "mounts": [
+      "source=cody-chat-history,target=/root/.config/sourcegraph/cody,type=volume"
+  ],
+  "remoteUser": "root",
+  "postCreateCommand": "pip install -r requirements.txt"
 }
