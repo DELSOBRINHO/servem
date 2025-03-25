@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-c7f0bt9vg02ti*mt4=orytor#%zbgvt$bh3k0tsyolrlbd1t!o
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['8000-delsobrinho-servem-nnm5d23lvw3.ws-us118.gitpod.io']
 
 
 import os
