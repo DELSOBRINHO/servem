@@ -5,7 +5,7 @@ interface Notification {
   id: string;
   user_id: string;
   message: string;
-  read: boolean;
+  is_read: boolean; // Alterado de read para is_read
   created_at: string;
 }
 
@@ -24,14 +24,14 @@ const Notifications = ({ userId }: NotificationsProps) => {
     // Inscrever-se para atualizações em tempo real
     const channel = supabase
       .channel('public:notifications')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
         table: 'notifications',
         filter: `user_id=eq.${userId}`
       }, (payload) => {
         setNotifications(prev => [payload.new as Notification, ...prev]);
-        if (!(payload.new as Notification).read) {
+        if (!(payload.new as Notification).is_read) { // Alterado de read para is_read
           setUnreadCount(count => count + 1);
         }
       })
@@ -56,13 +56,13 @@ const Notifications = ({ userId }: NotificationsProps) => {
     }
     
     setNotifications(data || []);
-    setUnreadCount(data?.filter(n => !n.read).length || 0);
+    setUnreadCount(data?.filter(n => !n.is_read).length || 0); // Alterado de read para is_read
   };
 
   const markAsRead = async (id: string) => {
     const { error } = await supabase
       .from('notifications')
-      .update({ read: true })
+      .update({ is_read: true }) // Alterado de read para is_read
       .eq('id', id);
       
     if (error) {
@@ -70,8 +70,8 @@ const Notifications = ({ userId }: NotificationsProps) => {
       return;
     }
     
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
+    setNotifications(prev =>
+      prev.map(n => n.id === id ? { ...n, is_read: true } : n) // Alterado de read para is_read
     );
     setUnreadCount(count => Math.max(0, count - 1));
   };
@@ -79,24 +79,24 @@ const Notifications = ({ userId }: NotificationsProps) => {
   const markAllAsRead = async () => {
     const { error } = await supabase
       .from('notifications')
-      .update({ read: true })
+      .update({ is_read: true }) // Alterado de read para is_read
       .eq('user_id', userId)
-      .eq('read', false);
+      .eq('is_read', false); // Alterado de read para is_read
       
     if (error) {
       console.error('Erro ao marcar todas notificações como lidas:', error);
       return;
     }
     
-    setNotifications(prev => 
-      prev.map(n => ({ ...n, read: true }))
+    setNotifications(prev =>
+      prev.map(n => ({ ...n, is_read: true })) // Alterado de read para is_read
     );
     setUnreadCount(0);
   };
 
   return (
     <div className="relative">
-      <button 
+      <button
         onClick={() => setShowDropdown(!showDropdown)}
         className="relative p-2 text-gray-600 hover:text-gray-900"
       >
@@ -115,7 +115,7 @@ const Notifications = ({ userId }: NotificationsProps) => {
           <div className="p-3 border-b flex justify-between items-center">
             <h3 className="font-medium">Notificações</h3>
             {unreadCount > 0 && (
-              <button 
+              <button
                 onClick={markAllAsRead}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
@@ -131,9 +131,9 @@ const Notifications = ({ userId }: NotificationsProps) => {
               </div>
             ) : (
               notifications.map(notification => (
-                <div 
+                <div
                   key={notification.id}
-                  className={`p-3 border-b hover:bg-gray-50 ${!notification.read ? 'bg-blue-50' : ''}`}
+                  className={`p-3 border-b hover:bg-gray-50 ${!notification.is_read ? 'bg-blue-50' : ''}`} // Alterado de read para is_read
                   onClick={() => markAsRead(notification.id)}
                 >
                   <p className="text-sm">{notification.message}</p>
