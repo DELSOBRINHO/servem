@@ -1,17 +1,18 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
       colors: {
-        'servem-primary': '#3B82F6',    // Azul primário
-        'servem-secondary': '#10B981',  // Verde Servem
-        'servem-accent': '#F59E0B',     // Dourado/Amarelo
-        'servem-neutral': '#6B7280',    // Cinza neutro
-        'servem-light': '#F3F4F6',      // Cinza claro para fundos
+        'servem': {
+          primary: '#4F46E5',    // Cor principal (indigo-600)
+          secondary: '#10B981',  // Cor secundária (emerald-500)
+          neutral: '#4B5563',    // Cor neutra para textos (gray-600)
+          light: '#F9FAFB',      // Cor de fundo clara (gray-50)
+          dark: '#1F2937',       // Cor escura (gray-800)
+        },
       },
     },
   },

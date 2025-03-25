@@ -54,3 +54,4 @@ staticfiles/
 htmlcov/
 .tox/
 .nox/
+node_modules
