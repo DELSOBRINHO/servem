@@ -1,6 +1,6 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   /* Cores principais da Servem */
@@ -30,50 +30,52 @@
 }
 
 /* Base Styles */
-body {
-  font-family: var(--servem-font-sans);
-  background-color: var(--servem-background);
-  color: var(--servem-neutral-dark);
-  line-height: 1.5;
-}
+@layer base {
+  body {
+    font-family: var(--servem-font-sans);
+    background-color: var(--servem-background);
+    color: var(--servem-neutral-dark);
+    line-height: 1.5;
+  }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--servem-font-heading);
-  font-weight: 600;
-  color: var(--servem-primary);
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
-}
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--servem-font-heading);
+    font-weight: 600;
+    color: var(--servem-primary);
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
 
-h1 {
-  font-size: 2.25rem;
-  line-height: 2.5rem;
-}
+  h1 {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
 
-h2 {
-  font-size: 1.875rem;
-  line-height: 2.25rem;
-}
+  h2 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
 
-h3 {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
+  h3 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
 
-h4 {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-}
+  h4 {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
 
-a {
-  color: var(--servem-primary);
-  text-decoration: none;
-  transition: color 0.2s ease-in-out;
-}
+  a {
+    color: var(--servem-primary);
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+  }
 
-a:hover {
-  color: var(--servem-primary-dark);
-  text-decoration: underline;
+  a:hover {
+    color: var(--servem-primary-dark);
+    text-decoration: underline;
+  }
 }
 
 /* Componentes personalizados */
@@ -177,63 +179,47 @@ a:hover {
 }
 
 /* Animações */
-.fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+@layer utilities {
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .slide-in {
+    animation: slideIn 0.3s ease-in-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* Utilitários adicionais */
+  .text-servem-primary { color: var(--servem-primary); }
+  .text-servem-secondary { color: var(--servem-secondary); }
+  .text-servem-accent { color: var(--servem-accent); }
+  .text-servem-neutral { color: var(--servem-neutral); }
+
+  .bg-servem-primary { background-color: var(--servem-primary); }
+  .bg-servem-secondary { background-color: var(--servem-secondary); }
+  .bg-servem-accent { background-color: var(--servem-accent); }
+  .bg-servem-neutral { background-color: var(--servem-neutral); }
+  .bg-servem-background { background-color: var(--servem-background); }
 }
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.slide-in {
-  animation: slideIn 0.3s ease-in-out;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Responsividade */
-@media (max-width: 640px) {
-  h1 {
-    font-size: 1.875rem;
-    line-height: 2.25rem;
-  }
-  
-  h2 {
-    font-size: 1.5rem;
-    line-height: 2rem;
-  }
-  
-  h3 {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-  }
-}
-
-/* Utilitários adicionais */
-.text-servem-primary { color: var(--servem-primary); }
-.text-servem-secondary { color: var(--servem-secondary); }
-.text-servem-accent { color: var(--servem-accent); }
-.text-servem-neutral { color: var(--servem-neutral); }
-
-.bg-servem-primary { background-color: var(--servem-primary); }
-.bg-servem-secondary { background-color: var(--servem-secondary); }
-.bg-servem-accent { background-color: var(--servem-accent); }
-.bg-servem-neutral { background-color: var(--servem-neutral); }
-.bg-servem-background { background-color: var(--servem-background); }
 
 /* Estilos para scrollbar personalizada */
 ::-webkit-scrollbar {
@@ -253,4 +239,22 @@ a:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--servem-primary);
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
 }
