@@ -8,3 +8,7 @@ tasks:
   - init: npm install
 
 
+services:
+  your-service-name:
+    ports:
+      - "54112:54112"
