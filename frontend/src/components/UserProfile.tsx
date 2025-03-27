@@ -105,109 +105,76 @@ const UserProfile = ({ userId }: UserProfileProps) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-xl font-bold mb-4">Seu Perfil</h2>
-      
-      {!editing ? (
-        <div>
-          <div className="mb-4">
-            <h3 className="text-lg font-medium">Informações Pessoais</h3>
-            <p><strong>Nome:</strong> {user?.name}</p>
-            <p><strong>Email:</strong> {user?.email}</p>
-            <p><strong>Função:</strong> {user?.role === "líder" ? "Líder" : "Voluntário"}</p>
-            <p><strong>Ministério:</strong> {user?.ministry || "Não informado"}</p>
-          </div>
-          
-          <div className="mb-4">
-            <h3 className="text-lg font-medium">Disponibilidade</h3>
-            {daysOfWeek.map(day => (
-              <div key={day} className="flex items-center mb-1">
-                <span className="w-32">{day}:</span>
-                <span className={user?.availability?.[day] ? "text-green-600" : "text-red-600"}>
-                  {user?.availability?.[day] ? "Disponível" : "Indisponível"}
-                </span>
-              </div>
-            ))}
-          </div>
-          
-          <button
-            onClick={() => setEditing(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-          >
-            Editar Perfil
-          </button>
-        </div>
-      ) : (
+      {editing ? (
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Nome</label>
+            <label className="block text-sm font-medium mb-1">Nome</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
+              className="w-full border rounded px-3 py-2"
             />
           </div>
-          
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Ministério</label>
+            <label className="block text-sm font-medium mb-1">Ministério</label>
             <input
               type="text"
               name="ministry"
               value={formData.ministry}
               onChange={handleChange}
-              className="w-full p-2 border rounded"
-              placeholder="Ex: Louvor, Infantil, Recepção..."
+              className="w-full border rounded px-3 py-2"
             />
           </div>
-          
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Disponibilidade</label>
-            {daysOfWeek.map(day => (
-              <div key={day} className="flex items-center mb-2">
-                <span className="w-32">{day}:</span>
-                <div className="flex space-x-4">
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      checked={formData.availability?.[day] === true}
-                      onChange={() => handleAvailabilityChange(day, true)}
-                      className="form-radio h-4 w-4 text-blue-600"
-                    />
-                    <span className="ml-2">Disponível</span>
-                  </label>
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      checked={formData.availability?.[day] === false}
-                      onChange={() => handleAvailabilityChange(day, false)}
-                      className="form-radio h-4 w-4 text-red-600"
-                    />
-                    <span className="ml-2">Indisponível</span>
-                  </label>
-                </div>
+            <label className="block text-sm font-medium mb-1">Disponibilidade</label>
+            {daysOfWeek.map((day) => (
+              <div key={day} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={formData.availability[day] || false}
+                  onChange={(e) => handleAvailabilityChange(day, e.target.checked)}
+                />
+                <span>{day}</span>
               </div>
             ))}
           </div>
-          
-          <div className="flex space-x-4">
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
-              disabled={loading}
-            >
-              {loading ? "Salvando..." : "Salvar"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditing(false)}
-              className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition-colors"
-              disabled={loading}
-            >
-              Cancelar
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          >
+            Salvar
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditing(false)}
+            className="ml-2 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
+          >
+            Cancelar
+          </button>
         </form>
+      ) : (
+        <>
+          <p><strong>Nome:</strong> {user?.name}</p>
+          <p><strong>Email:</strong> {user?.email}</p>
+          <p><strong>Função:</strong> {user?.role}</p>
+          <p><strong>Ministério:</strong> {user?.ministry}</p>
+          <p><strong>Disponibilidade:</strong></p>
+          <ul>
+            {Object.entries(user?.availability || {}).map(([day, available]) => (
+              <li key={day}>
+                {day}: {available ? "Disponível" : "Indisponível"}
+              </li>
+            ))}
+          </ul>
+          <button
+            onClick={() => setEditing(true)}
+            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          >
+            Editar Perfil
+          </button>
+        </>
       )}
     </div>
   );

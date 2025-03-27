@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { supabase } from "./supabaseClient";
+import { Session } from "@supabase/supabase-js";
 import Auth from "./components/Auth";
 import Dashboard from "./components/Dashboard";
 import ProgramForm from "./components/ProgramForm";
@@ -17,7 +17,7 @@ interface User {
 }
 
 function App() {
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -47,6 +47,19 @@ function App() {
     );
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // Simular dados fictícios para teste
+    setUser({
+      id: "1",
+      name: "Teste Usuário",
+      email: "teste@exemplo.com",
+      role: "líder",
+      ministry: "Louvor",
+      availability: { "Segunda-feira": true, "Terça-feira": false }
+    });
+    setLoading(false);
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
