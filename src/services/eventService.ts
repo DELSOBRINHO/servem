@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '../services/supabase';
 import { Event } from '../types/Event';
 import { EventVolunteer } from '../types/EventVolunteer';
 

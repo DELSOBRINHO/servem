@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase } from '../services/supabase.ts';
 import { Department } from '../types/Department';
 
 export const departmentService = {

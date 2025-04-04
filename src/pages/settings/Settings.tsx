@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNotificationContext } from '../../contexts/NotificationContext';
 import { useLoading } from '../../hooks/useLoading';
-import { supabase } from '/src/services/supabase';
+import { supabase } from '/src/services/supabase.ts';
 import { 
   Cog6ToothIcon, 
   UserGroupIcon, 
