@@ -183,44 +183,38 @@ const VolunteerList: React.FC = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-servem-primary"></div>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          {filteredVolunteers.length > 0 ? (
-            <ul role="list" className="divide-y divide-gray-200">
-              {filteredVolunteers.map((volunteer) => (
-                <li key={volunteer.id}>
-                  <Link to={`/volunteers/${volunteer.id}`} className="block hover:bg-gray-50">
-                    <div className="px-4 py-4 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-servem-primary flex items-center justify-center text-white font-medium">
-                            {volunteer.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="ml-4">
-                            <p className="text-sm font-medium text-gray-900">{volunteer.name}</p>
-                            <p className="text-sm text-gray-500">{volunteer.email}</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${volunteer.status === 'Ativo' ? 'bg-green-100 text-green-800' : 
-                              volunteer.status === 'Inativo' ? 'bg-red-100 text-red-800' : 
-                              'bg-yellow-100 text-yellow-800'}`}>
-                            {volunteer.status}
-                          </span>
-                          <p className="mt-1 text-sm text-gray-500">{volunteer.department || 'Sem departamento'}</p>
-                        </div>
+        <AnimatedList
+          items={filteredVolunteers}
+          keyExtractor={(volunteer) => volunteer.id}
+          emptyMessage="Nenhum voluntário encontrado"
+          renderItem={(volunteer) => (
+            <li className="py-4">
+              <Link to={`/volunteers/${volunteer.id}`} className="block hover:bg-gray-50 transition duration-150 ease-in-out">
+                <div className="px-4 py-4 sm:px-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-servem-primary bg-opacity-20 flex items-center justify-center text-servem-primary">
+                        <UserIcon className="h-6 w-6" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-servem-primary truncate">{volunteer.name}</p>
+                        <p className="text-sm text-gray-500">{volunteer.email}</p>
                       </div>
                     </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="px-4 py-5 sm:p-6 text-center text-gray-500">
-              Nenhum voluntário encontrado com os filtros selecionados.
-            </div>
+                    <div className="flex flex-col items-end">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        volunteer.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {volunteer.status}
+                      </span>
+                      <div className="text-sm text-gray-500 mt-1">{volunteer.department}</div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </li>
           )}
-        </div>
+        />
       )}
     </div>
   );

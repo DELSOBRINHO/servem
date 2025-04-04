@@ -5,7 +5,7 @@ import { useLoading } from '../../hooks/useLoading';
 import { useNotificationContext } from '../../contexts/NotificationContext';
 import { Event } from '../../types/Event';
 import { 
-  CalendarPlusIcon, 
+  CalendarIcon, 
   MagnifyingGlassIcon,
   FunnelIcon,
   ArrowDownTrayIcon
@@ -189,49 +189,52 @@ const EventList: React.FC = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-servem-primary"></div>
         </div>
       ) : (
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          {filteredEvents.length > 0 ? (
-            <ul role="list" className="divide-y divide-gray-200">
-              {filteredEvents.map((event) => {
-                const status = getEventStatus(event);
-                
-                return (
-                  <li key={event.id}>
-                    <Link to={`/events/${event.id}`} className="block hover:bg-gray-50">
-                      <div className="px-4 py-4 sm:px-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 rounded-full bg-servem-accent flex items-center justify-center text-white">
-                              <span className="text-sm font-medium">
-                                {format(new Date(event.event_date), 'dd', { locale: ptBR })}
-                              </span>
-                            </div>
-                            <div className="ml-4">
-                              <p className="text-sm font-medium text-gray-900">{event.title}</p>
-                              <p className="text-sm text-gray-500">
-                                {formatDate(event.event_date)} • {event.start_time.substring(0, 5)} - {event.end_time.substring(0, 5)}
-                              </p>
-                            </div>
+        <AnimatedList
+          items={filteredEvents}
+          keyExtractor={(event) => event.id}
+          emptyMessage="Nenhum evento encontrado"
+          renderItem={(event) => (
+            <li className="py-4">
+              <Link to={`/events/${event.id}`} className="block hover:bg-gray-50 transition duration-150 ease-in-out">
+                <div className="px-4 py-4 sm:px-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-servem-accent bg-opacity-20 flex items-center justify-center text-servem-accent">
+                        <CalendarIcon className="h-6 w-6" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-servem-primary truncate">{event.title}</p>
+                        <div className="mt-1 flex flex-wrap gap-y-1 gap-x-4">
+                          <div className="flex items-center text-xs text-gray-500">
+                            <CalendarIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                            {formatDate(event.event_date)}
                           </div>
-                          <div className="flex flex-col items-end">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${status.className}`}>
-                              {status.label}
-                            </span>
-                            <p className="mt-1 text-sm text-gray-500">{event.location || 'Local não definido'}</p>
+                          <div className="flex items-center text-xs text-gray-500">
+                            <ClockIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                            {event.start_time.substring(0, 5)} - {event.end_time.substring(0, 5)}
                           </div>
                         </div>
                       </div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <div className="px-4 py-5 sm:p-6 text-center text-gray-500">
-              Nenhum evento encontrado com os filtros selecionados.
-            </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        isEventUpcoming(event) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {isEventUpcoming(event) ? 'Próximo' : 'Passado'}
+                      </span>
+                      {event.location && (
+                        <div className="text-sm text-gray-500 mt-1 flex items-center">
+                          <MapPinIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                          {event.location}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </li>
           )}
-        </div>
+        />
       )}
     </div>
   );

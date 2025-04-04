@@ -1,6 +1,8 @@
-import React from 'react'
-import { Bars3Icon, BellIcon } from '@heroicons/react/24/outline'
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
+import LanguageSelector from '../common/LanguageSelector'
 
 interface HeaderProps {
   setSidebarOpen: (open: boolean) => void
@@ -8,6 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ setSidebarOpen }) => {
   const { t } = useTranslation()
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false)
 
   return (
     <div className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow">
@@ -21,9 +24,23 @@ const Header: React.FC<HeaderProps> = ({ setSidebarOpen }) => {
       </button>
       <div className="flex-1 px-4 flex justify-between">
         <div className="flex-1 flex items-center">
-          <h1 className="text-xl font-semibold text-servem-primary">{t('app.title', 'Sistema de Gerenciamento de Voluntários')}</h1>
+          <h1 className="text-xl font-semibold text-servem-primary">{t('app.title')}</h1>
         </div>
         <div className="ml-4 flex items-center md:ml-6 space-x-4">
+          <div className="relative">
+            <button
+              onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+              className="relative inline-flex items-center p-2 rounded-full bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-servem-primary"
+            >
+              <span className="sr-only">Select language</span>
+              {showLanguageMenu ? (
+                <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+              ) : (
+                <LanguageSelector />
+              )}
+            </button>
+          </div>
+
           <button
             type="button"
             className="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-servem-primary"

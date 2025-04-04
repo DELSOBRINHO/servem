@@ -100,7 +100,7 @@ const Dashboard: React.FC = () => {
               
               <div className="pt-4 border-t border-gray-200">
                 <div className="flex items-center">
-                  <CalendarIcon className="h-5 w-5 text-gray-400 mr-2" />
+                  <CalendarIcon className="h-2 w-5 text-gray-400 mr-2" />
                   <span className="text-sm font-medium text-gray-500">Próximos Eventos</span>
                 </div>
                 <div className="mt-1">

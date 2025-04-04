@@ -20,11 +20,11 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const { t } = useTranslation();
 
   const navigation = [
-    { name: t('navigation.dashboard', 'Dashboard'), href: '/', icon: HomeIcon },
-    { name: t('navigation.volunteers', 'Voluntários'), href: '/volunteers', icon: UserGroupIcon },
-    { name: t('navigation.events', 'Eventos'), href: '/events', icon: CalendarIcon },
-    { name: t('navigation.reports', 'Relatórios'), href: '/reports', icon: ChartBarIcon },
-    { name: t('navigation.settings', 'Configurações'), href: '/settings', icon: Cog6ToothIcon },
+    { name: t('navigation.dashboard'), href: '/', icon: HomeIcon },
+    { name: t('navigation.volunteers'), href: '/volunteers', icon: UserGroupIcon },
+    { name: t('navigation.events'), href: '/events', icon: CalendarIcon },
+    { name: t('navigation.reports'), href: '/reports', icon: ChartBarIcon },
+    { name: t('navigation.settings'), href: '/settings', icon: Cog6ToothIcon },
   ];
 
   return (

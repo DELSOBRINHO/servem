@@ -112,29 +112,61 @@ const EventDetails: React.FC = () => {
   };
 
   const handleAddVolunteer = async () => {
-    if (!id || !selectedVolunteerId) return;
-    
+    if (!selectedVolunteerId) return;
+
     try {
-      await withLoading(
-        eventService.addVolunteerToEvent(id, selectedVolunteerId)
-          .then((result) => {
-            if (result.error) {
-              throw new Error(result.error.message);
-            }
-            
-            // Find the volunteer that was added
-            const addedVolunteer = availableVolunteers.find(v => v.id === selectedVolunteerId);
-            if (addedVolunteer) {
-              // Update the lists
-              setEventVolunteers([...eventVolunteers, addedVolunteer]);
-              setAvailableVolunteers(availableVolunteers.filter(v => v.id !== selectedVolunteerId));
-            }
-            
-            setIsAddingVolunteer(false);
-            setSelectedVolunteerId('');
-            success('Voluntário adicionado com sucesso!');
-          })
-      );
+      await withLoading(async () => {
+        // Adicionar voluntário ao evento
+        const { error: addError } = await supabase
+          .from('event_volunteers')
+          .insert([
+            { event_id: event.id, volunteer_id: selectedVolunteerId }
+          ]);
+
+        if (addError) throw new Error(addError.message);
+
+        // Buscar os dados do voluntário para o e-mail
+        const { data: volunteerData, error: volunteerError } = await supabase
+          .from('volunteers')
+          .select('*')
+          .eq('id', selectedVolunteerId)
+          .single();
+
+        if (!volunteerError && volunteerData && volunteerData.email) {
+          // Enviar e-mail de notificação
+          const formattedDate = format(new Date(event.event_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+          const formattedTime = `${event.start_time.substring(0, 5)} - ${event.end_time.substring(0, 5)}`;
+          
+          await emailService.sendEventNotification(
+            volunteerData.email,
+            volunteerData.name,
+            event.title,
+            formattedDate,
+            formattedTime,
+            event.location || 'Local não informado'
+          );
+        }
+
+        // Atualizar a lista de voluntários
+        const { data: updatedVolunteers, error: fetchError } = await supabase
+          .from('volunteers')
+          .select(`
+            id,
+            name,
+            email,
+            phone,
+            department,
+            role,
+            status
+          `)
+          .eq('id', selectedVolunteerId);
+
+        if (fetchError) throw new Error(fetchError.message);
+
+        setEventVolunteers([...eventVolunteers, ...(updatedVolunteers || [])]);
+        setSelectedVolunteerId('');
+        setIsAddingVolunteer(false);
+      });
     } catch (err) {
       console.error('Error adding volunteer to event:', err);
       error('Erro ao adicionar voluntário ao evento. Por favor, tente novamente.');
