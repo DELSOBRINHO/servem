@@ -1,89 +1,76 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { eventService } from '../services/eventService';
+import { volunteerService } from '../services/volunteerService';
 import { useLoading } from '../hooks/useLoading';
 import { useNotificationContext } from '../contexts/NotificationContext';
-import { volunteerService } from '../services/volunteerService';
-import { eventService } from '../services/eventService';
-import { Volunteer } from '../types/Volunteer';
 import { Event } from '../types/Event';
-import { CalendarIcon, UserGroupIcon, ClockIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { format } from 'date-fns';
+import { Volunteer } from '../types/Volunteer';
+import { format, isToday, isAfter, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { 
+  CalendarIcon, 
+  UsersIcon, 
+  ClockIcon,
+  MapPinIcon
+} from '@heroicons/react/24/outline';
 
 const Dashboard: React.FC = () => {
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
-  const [stats, setStats] = useState({
-    totalVolunteers: 0,
-    activeVolunteers: 0,
-    upcomingEvents: 0,
-    departmentsCount: 0,
+  const [volunteerStats, setVolunteerStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0
   });
   const { isLoading, withLoading } = useLoading(true);
   const { error } = useNotificationContext();
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchData = async () => {
       try {
         await withLoading(Promise.all([
-          fetchVolunteers(),
-          fetchUpcomingEvents(),
-        ]));
+          eventService.getEvents(),
+          volunteerService.getVolunteers()
+        ]).then(([events, volunteers]) => {
+          // Filter upcoming events
+          const now = new Date();
+          const upcoming = events
+            .filter(event => isAfter(new Date(event.event_date), now) || isToday(new Date(event.event_date)))
+            .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+            .slice(0, 5);
+          
+          setUpcomingEvents(upcoming);
+          
+          // Calculate volunteer stats
+          const active = volunteers.filter(v => v.status === 'Ativo').length;
+          const inactive = volunteers.filter(v => v.status === 'Inativo').length;
+          
+          setVolunteerStats({
+            total: volunteers.length,
+            active,
+            inactive
+          });
+        }));
       } catch (err) {
-        error('Erro ao carregar dados do dashboard');
-        console.error(err);
+        console.error('Error fetching dashboard data:', err);
+        error('Erro ao carregar os dados do dashboard');
       }
     };
 
-    fetchDashboardData();
+    fetchData();
   }, []);
 
-  const fetchVolunteers = async () => {
-    try {
-      const allVolunteers = await volunteerService.getVolunteers();
-      const activeVolunteers = allVolunteers.filter(v => v.status === 'Ativo');
-      const departments = new Set(allVolunteers.map(v => v.department).filter(Boolean));
-      
-      setVolunteers(allVolunteers.slice(0, 5));
-      setStats(prev => ({
-        ...prev,
-        totalVolunteers: allVolunteers.length,
-        activeVolunteers: activeVolunteers.length,
-        departmentsCount: departments.size,
-      }));
-    } catch (err) {
-      console.error('Erro ao buscar voluntários:', err);
-      throw err;
-    }
-  };
-
-  const fetchUpcomingEvents = async () => {
-    try {
-      const events = await eventService.getUpcomingEvents(5);
-      setUpcomingEvents(events);
-      setStats(prev => ({
-        ...prev,
-        upcomingEvents: events.length,
-      }));
-    } catch (err) {
-      console.error('Erro ao buscar eventos:', err);
-      throw err;
-    }
-  };
-
   const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), 'dd MMM yyyy', { locale: ptBR });
-    } catch (err) {
-      return dateString;
-    }
+    return format(new Date(dateString), "dd 'de' MMMM", { locale: ptBR });
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-servem-neutral">Dashboard</h1>
-        <p className="text-gray-500">Bem-vindo ao SerVem, seu sistema de gestão de voluntários.</p>
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Bem-vindo ao sistema de gerenciamento de voluntários da igreja
+        </p>
       </div>
 
       {isLoading ? (
@@ -91,218 +78,120 @@ const Dashboard: React.FC = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-servem-primary"></div>
         </div>
       ) : (
-        <>
-          {/* Stats */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Stats Section */}
+          <div className="bg-white shadow rounded-lg p-6 lg:col-span-1">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Estatísticas</h2>
+            
+            <div className="space-y-4">
+              <div>
                 <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-servem-primary rounded-md p-3">
-                    <UserGroupIcon className="h-6 w-6 text-white" aria-hidden="true" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Total de Voluntários</dt>
-                      <dd>
-                        <div className="text-lg font-medium text-servem-neutral">{stats.totalVolunteers}</div>
-                      </dd>
-                    </dl>
+                  <UsersIcon className="h-5 w-5 text-gray-400 mr-2" />
+                  <span className="text-sm font-medium text-gray-500">Total de Voluntários</span>
+                </div>
+                <div className="mt-1">
+                  <div className="text-2xl font-semibold text-gray-900">{volunteerStats.total}</div>
+                  <div className="mt-1 flex items-baseline text-sm">
+                    <span className="text-green-600 font-semibold">{volunteerStats.active} ativos</span>
+                    <span className="ml-2 text-gray-500">({Math.round((volunteerStats.active / volunteerStats.total) * 100) || 0}%)</span>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                <div className="text-sm">
-                  <Link to="/volunteers" className="font-medium text-servem-primary hover:text-indigo-500">
-                    Ver todos
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
+              
+              <div className="pt-4 border-t border-gray-200">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-servem-secondary rounded-md p-3">
-                    <UserGroupIcon className="h-6 w-6 text-white" aria-hidden="true" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Voluntários Ativos</dt>
-                      <dd>
-                        <div className="text-lg font-medium text-servem-neutral">{stats.activeVolunteers}</div>
-                      </dd>
-                    </dl>
+                  <CalendarIcon className="h-5 w-5 text-gray-400 mr-2" />
+                  <span className="text-sm font-medium text-gray-500">Próximos Eventos</span>
+                </div>
+                <div className="mt-1">
+                  <div className="text-2xl font-semibold text-gray-900">{upcomingEvents.length}</div>
+                  <div className="mt-1 text-sm text-gray-500">
+                    eventos agendados
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                <div className="text-sm">
-                  <Link to="/volunteers?status=Ativo" className="font-medium text-servem-primary hover:text-indigo-500">
-                    Ver ativos
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                    <CalendarIcon className="h-6 w-6 text-white" aria-hidden="true" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Próximos Eventos</dt>
-                      <dd>
-                        <div className="text-lg font-medium text-servem-neutral">{stats.upcomingEvents}</div>
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                <div className="text-sm">
-                  <Link to="/events" className="font-medium text-servem-primary hover:text-indigo-500">
-                    Ver todos
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                    <svg className="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Departamentos</dt>
-                      <dd>
-                        <div className="text-lg font-medium text-servem-neutral">{stats.departmentsCount}</div>
-                      </dd>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                <div className="text-sm">
-                  <Link to="/settings" className="font-medium text-servem-primary hover:text-indigo-500">
-                    Configurações
-                  </Link>
-                </div>
+              
+              <div className="pt-4">
+                <Link
+                  to="/reports"
+                  className="inline-flex items-center text-sm font-medium text-servem-primary hover:text-servem-accent"
+                >
+                  Ver relatórios completos
+                  <svg className="ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </Link>
               </div>
             </div>
           </div>
 
-          {/* Recent Volunteers and Upcoming Events */}
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {/* Recent Volunteers */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-servem-neutral">Voluntários Recentes</h3>
-              </div>
-              <ul className="divide-y divide-gray-200">
-                {volunteers.length > 0 ? (
-                  volunteers.map((volunteer) => (
-                    <li key={volunteer.id} className="px-4 py-4 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-servem-primary flex items-center justify-center text-white">
-                            {volunteer.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-servem-neutral">{volunteer.name}</div>
-                            <div className="text-sm text-gray-500">{volunteer.department || 'Sem departamento'}</div>
-                          </div>
-                        </div>
-                        <div>
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            volunteer.status === 'Ativo' ? 'bg-green-100 text-green-800' : 
-                            volunteer.status === 'Inativo' ? 'bg-red-100 text-red-800' : 
-                            volunteer.status === 'Afastado' ? 'bg-yellow-100 text-yellow-800' : 
-                            'bg-blue-100 text-blue-800'
-                          }`}>
-                            {volunteer.status}
-                          </span>
-                        </div>
-                      </div>
-                    </li>
-                  ))
-                ) : (
-                  <li className="px-4 py-5 sm:px-6 text-center text-gray-500">
-                    Nenhum voluntário cadastrado
-                  </li>
-                )}
-              </ul>
-              {volunteers.length > 0 && (
-                <div className="bg-gray-50 px-4 py-4 sm:px-6 rounded-b-lg">
-                  <div className="text-sm">
-                    <Link to="/volunteers" className="font-medium text-servem-primary hover:text-indigo-500">
-                      Ver todos os voluntários
-                    </Link>
-                  </div>
-                </div>
-              )}
+          {/* Upcoming Events Section */}
+          <div className="bg-white shadow rounded-lg p-6 lg:col-span-2">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-gray-900">Próximos Eventos</h2>
+              <Link
+                to="/events"
+                className="text-sm font-medium text-servem-primary hover:text-servem-accent"
+              >
+                Ver todos
+              </Link>
             </div>
-
-            {/* Upcoming Events */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-                <h3 className="text-lg leading-6 font-medium text-servem-neutral">Próximos Eventos</h3>
+            
+            {upcomingEvents.length > 0 ? (
+              <div className="space-y-4">
+                {upcomingEvents.map((event) => (
+                  <Link
+                    key={event.id}
+                    to={`/events/${event.id}`}
+                    className="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 h-12 w-12 rounded-lg bg-servem-accent bg-opacity-20 flex items-center justify-center text-servem-accent">
+                        <CalendarIcon className="h-6 w-6" />
+                      </div>
+                      <div className="ml-4">
+                        <h3 className="text-base font-medium text-gray-900">{event.title}</h3>
+                        <div className="mt-1 flex flex-wrap gap-y-1 gap-x-4">
+                          <div className="flex items-center text-sm text-gray-500">
+                            <CalendarIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                            {formatDate(event.event_date)}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-500">
+                            <ClockIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                            {event.start_time.substring(0, 5)} - {event.end_time.substring(0, 5)}
+                          </div>
+                          {event.location && (
+                            <div className="flex items-center text-sm text-gray-500">
+                              <MapPinIcon className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" />
+                              {event.location}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
-              <ul className="divide-y divide-gray-200">
-                {upcomingEvents.length > 0 ? (
-                  upcomingEvents.map((event) => (
-                    <li key={event.id} className="px-4 py-4 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-servem-secondary flex items-center justify-center text-white">
-                            <CalendarIcon className="h-5 w-5" aria-hidden="true" />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-servem-neutral">{event.title}</div>
-                            <div className="text-sm text-gray-500">{event.department || 'Sem departamento'}</div>
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {formatDate(event.event_date)}
-                        </div>
-                      </div>
-                      <div className="mt-2 text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <ClockIcon className="h-4 w-4 mr-1" aria-hidden="true" />
-                          <span>{event.start_time} - {event.end_time}</span>
-                        </div>
-                        {event.location && (
-                          <div className="flex items-center mt-1">
-                            <MapPinIcon className="h-4 w-4 mr-1" aria-hidden="true" />
-                            <span>{event.location}</span>
-                          </div>
-                        )}
-                      </div>
-                    </li>
-                  ))
-                ) : (
-                  <li className="px-4 py-5 sm:px-6 text-center text-gray-500">
-                    Nenhum evento próximo
-                  </li>
-                )}
-              </ul>
-              {upcomingEvents.length > 0 && (
-                <div className="bg-gray-50 px-4 py-4 sm:px-6 rounded-b-lg">
-                  <div className="text-sm">
-                    <Link to="/events" className="font-medium text-servem-primary hover:text-indigo-500">
-                      Ver todos os eventos
-                    </Link>
-                  </div>
+            ) : (
+              <div className="text-center py-8">
+                <CalendarIcon className="mx-auto h-12 w-12 text-gray-300" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum evento próximo</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Não há eventos agendados para os próximos dias.
+                </p>
+                <div className="mt-6">
+                  <Link
+                    to="/events/new"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-servem-accent hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-servem-accent"
+                  >
+                    <CalendarIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                    Criar novo evento
+                  </Link>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
