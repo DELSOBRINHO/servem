@@ -1,0 +1,7 @@
+# Import services for easier access
+from .volunteer_search import search_volunteers_by_location_and_skills
+from .statistics import get_volunteer_stats, get_event_stats, get_organization_stats
+from .gamification import get_volunteer_badges, get_volunteer_achievements, get_leaderboard, award_points, award_badge
+from .prediction import predict_volunteer_needs
+from .recommendations import get_event_recommendations
+from .engagement import get_volunteer_engagement_score, identify_disengaged_volunteers
